@@ -4,7 +4,7 @@ const assessmentModel = require("../../../../models/assessmentModel.js");
 async function fetchAssessmentData() {
   try {
     const assessments = await assessmentModel.find();
-    console.log("Fetched Assessments:", assessments);
+    console.log("Fetched InstructorAssessments:", assessments);
     return assessments;
   } catch (error) {
     console.error("Database fetch error:", error.message);

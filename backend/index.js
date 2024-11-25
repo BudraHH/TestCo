@@ -10,7 +10,8 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    // origin: "http://localhost:5173",
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -21,14 +22,12 @@ app.use(express.urlencoded({ limit: "10mb", extended: true })); // Parse URL-enc
 app.use(cookieParser());
 app.use("/api", router);
 
-const PORT = 8080;
-
 // Connect to the database and start the server
 connectDB()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Connected to DB");
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {

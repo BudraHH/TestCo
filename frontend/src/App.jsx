@@ -1,28 +1,51 @@
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { setUserDetails } from "./store/userSlice.js";
-import Context, { AppProvider } from "./context/index.jsx";
+import { AppProvider } from "./context/index.jsx";
 
-import HomePage from "./pages/home_page/HomePage.jsx";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import SignInPage from "./pages/initial_pages/SignInPage.jsx";
-import SignUpPage from "./pages/initial_pages/SignUpPage.jsx";
-import ForgotPasswordPage from "./pages/initial_pages/ForgetPasswordPage.jsx";
-import CodingAssessment from "./pages/views/student/assessment-pages/CodingAssessment.jsx";
-import InstructorLayout from "./pages/views/instructor/InstructorLayout.jsx";
-import StudentsDetails from "./pages/views/instructor/students-details/StudentsDetails.jsx";
-import Home from "./pages/views/instructor/home/Home.jsx";
-import AssessmentsLayout from "./pages/views/instructor/assessments/AssessmentsLayout.jsx";
-import SingleStudentDetails from "./pages/views/instructor/students-details/SingleStudentDetails.jsx";
-import AddNewAssement from "./pages/views/instructor/assessments/add-assessments/AddNewAssessment.jsx";
-import AssessmentsType from "./pages/views/instructor/assessments/AssessmentsType.jsx";
-import MCQAssessment from "./pages/views/student/assessment-pages/MCQAssessment.jsx";
-import PageNotFoundError from "./PageNotFoundError.jsx";
+// LANDING PAGE
+import LandingPage from "./pages/landing/LandingPage.jsx";
+
+// AUTHENTICATION ROUTES
+// PRE AUTH
+import SignIn from "./pages/authentication/SignIn.jsx";
+import SignUpPage from "./pages/authentication/SignUpPage.jsx";
+import AccountRecoveryPage from "./pages/authentication/AccountRecovery.jsx";
+import NeedHelp from "./pages/authentication/NeedHelp.jsx";
+// POST AUTH
+import ProfileCompletionParent from "./pages/authentication/porfile-completion/ProfileCompletionParent.jsx";
+
+// SUPER ADMIN ROUTES
+import SuperAdmin from "./pages/views/super-admin/SuperAdmin.jsx";
+import SuperAdminDashboard from "./pages/views/super-admin/pages/SuperAdminDashboard.jsx";
+import SuperAdminUserManagement from "./pages/views/super-admin/pages/SuperAdminUserManagement.jsx";
+import SuperAdminAssessmentsInfo from "./pages/views/super-admin/pages/assessments/SuperAdminAssessments.jsx";
+import SuperAdminSettings from "./pages/views/super-admin/pages/settings/SuperAdminSettings.jsx";
+
+// INSTRUCTOR ROUTES
+import Instructor from "./pages/views/instructor/Instructor.jsx";
+import InstructorHome from "./pages/views/instructor/pages/InstructorHome.jsx";
+import InstructorAssessmentsInfo from "./pages/views/instructor/pages/assessments/InstructorAssessmentsInfo.jsx";
+import InstructorAddNewAssessment from "./pages/views/instructor/pages/assessments/add-assessments/InstructorAddNewAssessment.jsx";
+import InstructorAddNewAssessmentType from "./pages/views/instructor/pages/assessments/add-assessments/InstructorAddNewAssessmentType.jsx";
+import InstructorStudentsDetails from "./pages/views/instructor/pages/students-details/InstructorStudentsDetails.jsx";
+import InstructorSingleStudentDetails from "./pages/views/instructor/pages/students-details/InstructorSingleStudentDetails.jsx";
+import InstructorSettings from "./pages/views/instructor/pages/settings/InstructorSettings.jsx";
+
+// STUDENT ROUTES
+import Student from "./pages/views/student/Student.jsx";
+import StudentHome from "./pages/views/student/pages/StudentHome.jsx";
+import StudentAssessmentsInfo from "./pages/views/student/pages/assessment-pages/StudentAssessmentInfo.jsx";
+import StudentSingleAssessmentDetails  from "./pages/views/student/pages/assessment-pages/StudentSingleAssessmentDetails.jsx";
+import SystemCheck from "./pages/views/student/pages/assessment/SystemCheck.jsx";
+
+import CodingAssessment from "./pages/views/student/pages/assessment-pages/take-assessments/assessment-ui/CodingAssessment.jsx";
+import MCQAssessment from "./pages/views/student/pages/assessment-pages/take-assessments/assessment-ui/MCQAssessment.jsx";
+import InstructorAddNewStudent from "./pages/views/instructor/pages/students-details/InstructorAddNewStudent.jsx";
 
 
 const App = () => {
@@ -49,59 +72,54 @@ const App = () => {
     if (isAuthenticated) fetchUserDetails();
   }, [isAuthenticated]);
 
-  const location = useLocation();
-  const hideHeaderFooterRoutes = ["*"];
-  const shouldHideHeaderFooter = hideHeaderFooterRoutes.includes(
-    location.pathname
-  );
-
   return (
-    <AppProvider>
-      <ToastContainer />
-      {/* {!shouldHideHeaderFooter && <Header />} */}
-      <main>
-        <Routes>
-          <Route path="/" element={<PageNotFoundError/>}/>
-          <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/code-test" element={<CodingAssessment />} />
-          <Route path="/mcq-assessment" element={<MCQAssessment/>} />
+      <AppProvider>
+        <ToastContainer />
+        <main>
+          <Routes>
+            {/* LANDING PAGE */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Instructor Layout and Subroutes */}
-          <Route path="/instructor" element={<InstructorLayout />}>
-            <Route path="/instructor/home" element={<Home />} />
+            {/* AUTHENTICATION ROUTES */}
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
+            <Route path="/forgot-password" element={<AccountRecoveryPage />} />
+            <Route path="/need-help" element={<NeedHelp />} />
+            <Route path="/profile-completion" element={<ProfileCompletionParent />} />
 
-            {/* Assessment Layout */}
-            <Route
-              path="/instructor/assessments"
-              element={<AssessmentsLayout />}
-            />
-            <Route
-              path="/instructor/assessments/add-new-assessment"
-              element={<AddNewAssement />}
-            >
-              <Route
-              path="/instructor/assessments/add-new-assessment/:assessmentType"
-              element={<AssessmentsType />}
-            />
+            {/* SUPER ADMIN ROUTES */}
+            <Route path="/super-admin" element={<SuperAdmin />}>
+              <Route path="dashboard" element={<SuperAdminDashboard />} />
+              <Route path="user-management" element={<SuperAdminUserManagement />} />
+              <Route path="assessments" element={<SuperAdminAssessmentsInfo />} />
+              <Route path="settings" element={<SuperAdminSettings />} />
             </Route>
-            
 
-            {/* Student Details Layout */}
-            <Route
-              path="/instructor/students-details"
-              element={<StudentsDetails />}
-            />
-            <Route
-              path="/instructor/students-details/student"
-              element={<SingleStudentDetails />}
-            />
-          </Route>
-        </Routes>
-      </main>
-      {/* {!shouldHideHeaderFooter && <Footer />} */}
-    </AppProvider>
+            {/* INSTRUCTOR ROUTES */}
+            <Route path="/instructor" element={<Instructor />}>
+              <Route path="home" element={<InstructorHome />} />
+              <Route path="assessments" element={<InstructorAssessmentsInfo />}>
+                <Route path="add-new-assessment" element={<InstructorAddNewAssessment />} />
+                <Route path=":assessmentType" element={<InstructorAddNewAssessmentType />} />
+              </Route>
+              <Route path="students-details" element={<InstructorStudentsDetails />} />
+              <Route path="students-details/student" element={<InstructorSingleStudentDetails />} />
+              <Route path="students-details/add-new-student" element={<InstructorAddNewStudent />} />
+              <Route path="account-settings" element={<InstructorSettings />} />
+            </Route>
+
+            {/* STUDENT ROUTES */}
+            <Route path="/student" element={<Student />}>
+              <Route path={`home`} element={<StudentHome />} />
+              <Route path={`my-assessments`} element={<StudentAssessmentsInfo/>}/>
+              <Route path="/student/assessment/:id" element={<StudentSingleAssessmentDetails />} />
+            </Route>
+            <Route path="/student/start-test/:assessmentId" element={<SystemCheck/>} />
+            <Route path="code-test" element={<CodingAssessment />} />
+            <Route path="mcq-assessment" element={<MCQAssessment />} />
+          </Routes>
+        </main>
+      </AppProvider>
   );
 };
 

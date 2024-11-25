@@ -21,7 +21,7 @@ async function userSignInController(req, res) {
     console.log("Signed in user's details: ", user);
 
     // Compare entered password with stored hash
-    const checkPassword = await bcrypt.compare(password, user.password);
+    const checkPassword = await bcrypt.compare(password, user.password || "");
     console.log("Password match status:", checkPassword);
     if (!checkPassword) {
       return res.status(401).json({ message: "Password is incorrect!", error: true, success: false });

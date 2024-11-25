@@ -37,3 +37,20 @@ body {
   scrollbar-width: none;      /* Hide scrollbar for Firefox */
 }
 
+
+/* styles.css */
+.stylish-scrollbar::-webkit-scrollbar {
+  width: 5px; /* Width of scrollbar */
+
+}
+.stylish-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a; /* Track color */
+  border-radius: 10px;
+}
+.stylish-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg,#1d2c48, #1d2c48); /* Gradient thumb */
+  border-radius: 10px;
+}
+.stylish-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #9333ea, #6366f1); /* Hover effect */
+}

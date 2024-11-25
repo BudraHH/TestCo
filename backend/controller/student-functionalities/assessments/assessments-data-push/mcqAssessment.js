@@ -4,7 +4,7 @@ const assessmentModel = require("../../../../models/assessmentModel.js");
 async function fetchMCQAssessmentData() {
   try {
     const mcqAssessments = await assessmentModel.find({ assessmentType: "MCQ" }); // Filter only MCQ assessments
-    console.log("Fetched MCQ Assessments:", mcqAssessments);
+    console.log("Fetched MCQ InstructorAssessments:", mcqAssessments);
     return mcqAssessments;
   } catch (error) {
     console.error("Database fetch error for MCQ assessments:", error.message);

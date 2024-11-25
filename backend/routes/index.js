@@ -33,6 +33,11 @@ router.post("/update-User-Details", authToken, updateUserDetails);
 const addNewAdmin = require("../controller/admin-functionalities/addAdmin");
 router.post("/add-new-admin", addNewAdmin);
 
+// ADD STUDENT
+const addNewStudent = require("../controller/admin-functionalities/addStudent")
+router.post("/add-new-student",addNewStudent);
+
+
 {
   /* INSTRUCTOR SIDE  */
 }

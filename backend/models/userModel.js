@@ -59,5 +59,5 @@ userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ username: 1 }, { unique: true });
 
 // Create the User model
-const userModel = mongoose.model("User", userSchema);
+const userModel = mongoose.model("user", userSchema);
 module.exports = userModel;

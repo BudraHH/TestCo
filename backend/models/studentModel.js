@@ -45,6 +45,6 @@ const studentSchema = new mongoose.Schema(
 studentSchema.index({ studentId: 1 }, { unique: true });
 
 // Define the discriminator for student model based on user model
-const studentModel = userModel.discriminator("Student", studentSchema);
+const studentModel = userModel.discriminator("student", studentSchema);
 
 module.exports = studentModel;
