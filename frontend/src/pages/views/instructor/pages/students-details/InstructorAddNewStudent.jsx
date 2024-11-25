@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { FilePlus, UserPlus } from "lucide-react"; // Importing icons
+import { useDropzone } from "react-dropzone"; // Import react-dropzone for drag and drop functionality
 
 const InstructorAddNewStudent = () => {
     const [formData, setFormData] = useState({
@@ -81,6 +82,14 @@ const InstructorAddNewStudent = () => {
         }
     };
 
+    const { getRootProps, getInputProps } = useDropzone({
+        accept: '.xlsx, .xls',
+        onDrop: (acceptedFiles) => {
+            const file = acceptedFiles[0];
+            handleFileUpload({ target: { files: [file] } }); // Reuse existing file upload handler
+        },
+    });
+
     return (
         <section className="w-full flex flex-col gap-4 p-4 ">
             {/* Header Section */}
@@ -101,8 +110,7 @@ const InstructorAddNewStudent = () => {
             {/* Content Section */}
             <div className="flex flex-col md:flex-row gap-4 bg-dark  rounded-lg shadow-lg ">
                 {/* File Upload and Manual Upload Buttons */}
-                <div className="flex flex-col gap-4 items-center justify-start  rounded-lg p-4 shadow-sm w-full md:w-auto bg-palatte-primary1
-                ">
+                <div className="flex flex-col gap-4 items-center justify-start  rounded-lg p-4 shadow-sm w-full md:w-auto bg-palatte-primary1">
                     <motion.button
                         whileTap={{ scale: 0.95 }}
                         whileHover={{ scale: 1.025 }}
@@ -135,25 +143,38 @@ const InstructorAddNewStudent = () => {
                             {/* Label for File Input */}
                             <label className="block text-palatte-light font-medium mb-2">Upload Excel File</label>
 
+                            {/* Drag and Drop Section */}
+                            <div
+                                {...getRootProps()}
+                                className="flex items-center justify-center w-full h-40 border-2 border-dashed border-palatte-secondary rounded-lg bg-palatte-primary2 text-palatte-light cursor-pointer hover:bg-palatte-primary4 transition duration-300 ease-in-out"
+                            >
+                                <input {...getInputProps()} />
+                                <div className="flex flex-col items-center">
+                                    <FilePlus className="h-8 w-8 mb-2" />
+                                    <span className="text-center text-sm">Drag & Drop Excel File Here</span>
+                                </div>
+                            </div>
+
                             {/* File Input Section */}
                             <div
-                                className="flex items-center justify-between bg-palatte-primary2 border border-palatte-secondary rounded-lg">
-                                {/* Actual File Input */}
-                                <input
-                                    type="file"
-                                    accept=".xlsx, .xls"
-                                    onChange={handleFileUpload}
-                                    className="hidden" // Hide the default file input button
-                                />
-
+                                className="flex items-center justify-between bg-palatte-primary2 border border-palatte-secondary rounded-lg mt-4"
+                            >
                                 {/* Custom File Upload Button */}
                                 <motion.label
-                                    htmlFor="file-input"  // Use 'htmlFor' to associate with the hidden file input
+                                    htmlFor="file-input"
                                     className="w-full flex items-center justify-center py-3 px-4 bg-palatte-primary4 text-white rounded-lg cursor-pointer hover:bg-palatte-secondary transition duration-300 ease-in-out"
                                 >
                                     <FilePlus className="h-5 w-5 mr-3"/>
                                     <span>Upload File</span>
                                 </motion.label>
+                                {/* Actual File Input */}
+                                <input
+                                    id="file-input"
+                                    type="file"
+                                    accept=".xlsx, .xls"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                />
                             </div>
 
                             {/* Display the selected file name (optional) */}
@@ -163,7 +184,6 @@ const InstructorAddNewStudent = () => {
                                 </p>
                             )}
                         </div>
-
                     ) : (
                         <div className="w-full">
                             <form onSubmit={handleSubmit} className="space-y-6">
