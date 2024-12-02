@@ -3,9 +3,9 @@ import InstructorProfileCompletion from "./components/InstructorProfileCompletio
 import AdminProfileCompletion from "./components/AdminProfileCompletion.jsx";
 
 const ProfileCompletion = ({ userRole, formData, handleInputChange, handleSubmit, isSubmitting }) => {
-  
+  // console.log("entered profile completion with role : >> ", userRole);
   switch (userRole) {
-    case 'student':
+    case 'Student':
       return (
         <StudentProfileCompletion
           formData={formData}
@@ -14,7 +14,7 @@ const ProfileCompletion = ({ userRole, formData, handleInputChange, handleSubmit
           isSubmitting={isSubmitting}
         />
       );
-    case 'instructor':
+    case 'Instructor':
       return (
         <InstructorProfileCompletion
           formData={formData}
@@ -23,7 +23,7 @@ const ProfileCompletion = ({ userRole, formData, handleInputChange, handleSubmit
           isSubmitting={isSubmitting}
         />
       );
-    case 'admin':
+    case 'Admin':
       return (
         <AdminProfileCompletion
           formData={formData}

@@ -1,101 +1,153 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { FilePlus, UserPlus } from "lucide-react"; // Importing icons
-import { useDropzone } from "react-dropzone"; // Import react-dropzone for drag and drop functionality
+import { FilePlus, UserPlus } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import backendApi from "../../../../../backendAPI/index.js";
+import { useSelector } from "react-redux";
 
 const InstructorAddNewStudent = () => {
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
-    const [errors, setErrors] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { accessToken: tokenFromRedux } = useSelector((state) => state.user.user);
     const [fileData, setFileData] = useState([]);
-    const [isUploadFileActive, setIsUploadFileActive] = useState(false); // State to track the active section
+    const [studentsData, setStudentsData] = useState([{ email: "", courses: [] }]);
+    const [numStudents, setNumStudents] = useState();
+    const [isUploadFileActive, setIsUploadFileActive] = useState(true);
+    const [courseInput, setCourseInput] = useState(""); // For courses input
     const navigate = useNavigate();
+    const [coursesHandled, setCoursesHandled] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState("");
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const {
+        userDetails,
+        courses = [], // Fallback to empty array if no courses
+        loading,
+        error,
+        setLoading,
+        setError,
+    } = useOutletContext();
+
+    useEffect(() => {
+        setCoursesHandled(courses);
+    }, [courses]);
+
+    const handleBackClick = () => navigate(`/instructor/students-details`);
+    const handleCourseSelect = (e) => {
+        setSelectedCourse(e.target.value);
+    };
+    console.log(selectedCourse);
+
+    // Handle file upload and parse it
+    const handleFileUpload = (file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+            // Assume courses are in a separate column in the file (adjust based on your actual file)
+            const updatedData = jsonData.map((student) => ({
+                email: student.email,
+                enrolledCourse: selectedCourse,
+            }));
+            setFileData(updatedData);
+        };
+        reader.readAsArrayBuffer(file);
     };
 
-    const validate = () => {
-        const newErrors = {};
-        if (!formData.email) {
-            newErrors.email = "Email is required";
-        } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
-            newErrors.email = "Invalid email address";
-        }
-        if (!formData.password) {
-            newErrors.password = "Password is required";
-        } else if (formData.password.length < 8) {
-            newErrors.password = "Password must be at least 8 characters";
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleBackClick = () => {
-        navigate(`/instructor/students-details`);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validate()) return;
-        setIsSubmitting(true);
-        try {
-            // Simulate an API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            console.log("Form submitted successfully:", formData);
-            alert("Student account created successfully!");
-            setFormData({ email: "", password: "" }); // Reset the form
-        } catch (error) {
-            console.error("Error submitting form:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Get the first sheet
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                setFileData(jsonData);
-
-                // Assuming the Excel has columns named 'email' and 'password'
-                if (jsonData.length > 0) {
-                    setFormData({
-                        email: jsonData[0].email || "",
-                        password: jsonData[0].password || "",
-                    });
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-    };
-
+    // Dropzone hook
     const { getRootProps, getInputProps } = useDropzone({
-        accept: '.xlsx, .xls',
+        accept: ".xlsx, .xls",
         onDrop: (acceptedFiles) => {
             const file = acceptedFiles[0];
-            handleFileUpload({ target: { files: [file] } }); // Reuse existing file upload handler
+            handleFileUpload(file);
         },
     });
 
+    // Handle student number input change
+    const handleNumStudentsChange = (e) => {
+        const value = parseInt(e.target.value);
+        setNumStudents(value);
+        const newStudentsData = Array.from({ length: value }, (_, i) => ({
+            email: studentsData[i]?.email || "",
+            courses: studentsData[i]?.courses || [],
+        }));
+        setStudentsData(newStudentsData);
+    };
+
+    // Handle changes to student email fields
+    const handleStudentChange = (index, field, value) => {
+        setStudentsData((prev) =>
+            prev.map((student, i) =>
+                i === index ? { ...student, [field]: value } : student
+            )
+        );
+    };
+
+    // Handle course input field
+    const handleCourseChange = (index, course) => {
+        setStudentsData((prev) =>
+            prev.map((student, i) =>
+                i === index
+                    ? { ...student, courses: [...student.courses, course] }
+                    : student
+            )
+        );
+        setCourseInput(""); // Clear the input after adding the course
+    };
+
+    // Handle form submission
+    const sendDataToBackend = async (data) => {
+        try {
+            const response = await fetch(backendApi.addStudents.url, {
+                method: backendApi.addStudents.method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${tokenFromRedux}`,
+                },
+                body: JSON.stringify({
+                    students: data,
+                }),
+            });
+
+            if (response.ok) {
+                alert("Data submitted successfully!");
+                // Reset all relevant state variables
+                setFileData([]);
+                setStudentsData([{ email: "", courses: [] }]);
+                setNumStudents(1);
+                setCourseInput("");
+                setIsUploadFileActive(false);
+                setSelectedCourse("")
+            } else {
+                alert("Failed to submit data.");
+            }
+        } catch (error) {
+            console.error("Error submitting data:", error);
+            alert("Error submitting data.");
+        }
+    };
+
+    // Final submission: decides what data to send based on the state
+    const handleSubmit = () => {
+        const dataToSend = fileData.length > 0 ? fileData : studentsData;
+        if (dataToSend.length > 0) {
+            console.log(dataToSend);
+            sendDataToBackend(dataToSend);  // Uncommented this line to send data
+        } else {
+            alert("No data to submit.");
+        }
+    };
+
     return (
-        <section className="w-full flex flex-col gap-4 p-4 ">
-            {/* Header Section */}
+        <section className="w-full flex flex-col gap-4">
             <div className="flex justify-between items-center bg-palatte-primary2 p-4 rounded-lg shadow-lg">
-                <h1 className="text-lg font-bold text-white cursor-pointer" onClick={handleBackClick}>
-                    My Students / <span className="font-semibold">Add New Student</span>
+                <h1 className="text-md font-regular text-white">
+                    <span className="cursor-pointer" onClick={handleBackClick}>
+                        My Students
+                    </span>{" "}
+                    / <span className="font-bold">Add New Student</span>
                 </h1>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -107,129 +159,144 @@ const InstructorAddNewStudent = () => {
                 </motion.button>
             </div>
 
-            {/* Content Section */}
-            <div className="flex flex-col md:flex-row gap-4 bg-dark  rounded-lg shadow-lg ">
-                {/* File Upload and Manual Upload Buttons */}
-                <div className="flex flex-col gap-4 items-center justify-start  rounded-lg p-4 shadow-sm w-full md:w-auto bg-palatte-primary1">
+            <div className="flex flex-col md:flex-row gap-4 bg-dark rounded-lg">
+                <div
+                    className="h-[9rem] flex flex-col gap-4 items-center justify-start rounded-lg p-4 shadow-sm w-full md:w-[250px] bg-palatte-primary1">
                     <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.025 }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg transition duration-300 ease-in-out ${
-                            isUploadFileActive ? 'text-white ring-2 ring-palatte-secondary bg-palatte-dark shadow-md' : 'text-palatte-medium bg-palatte-primary3 hover:bg-palatte-primary3 hover:text-palatte-light'
+                        whileTap={{scale: 0.95}}
+                        whileHover={{scale: 1.025}}
+                        className={`w-full flex items-center gap-2 px-6 py-3 rounded-lg transition duration-300 ease-in-out ${
+                            isUploadFileActive
+                                ? "text-white ring-2 ring-palatte-secondary bg-palatte-dark shadow-md"
+                                : "text-palatte-medium bg-palatte-primary3 hover:bg-palatte-primary3 hover:text-palatte-light"
                         }`}
-                        onClick={() => setIsUploadFileActive(true)} // Set file upload active
+                        onClick={() => setIsUploadFileActive(true)}
                     >
-                        <FilePlus className="h-5 w-5" />
-                        File
+                        <FilePlus className="h-5 w-5"/>
+                        Upload File
                     </motion.button>
-
                     <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.025 }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg transition duration-300 ease-in-out   ${
-                            !isUploadFileActive ? 'text-white ring-2 ring-palatte-secondary bg-palatte-dark shadow-md' : 'text-palatte-medium bg-palatte-primary3 hover:bg-palatte-primary3 hover:text-palatte-light'
+                        whileTap={{scale: 0.95}}
+                        whileHover={{scale: 1.025}}
+                        className={`w-full flex items-center gap-2 px-6 py-3 rounded-lg transition duration-300 ease-in-out ${
+                            !isUploadFileActive
+                                ? "text-white ring-2 ring-palatte-secondary bg-palatte-dark shadow-md"
+                                : "text-palatte-medium bg-palatte-primary3 hover:bg-palatte-primary3 hover:text-palatte-light"
                         }`}
-                        onClick={() => setIsUploadFileActive(false)} // Set manual input active
+                        onClick={() => setIsUploadFileActive(false)}
                     >
-                        <UserPlus className="h-5 w-5" />
+                        <UserPlus className="h-5 w-5"/>
                         Manually
                     </motion.button>
+
                 </div>
 
-                <div className={` w-full rounded-lg bg-palatte-primary1 p-4 shadow-lg`}>
-                    {/* Conditionally Render File Upload or Manual Form */}
+                <div className="flex flex-col w-full rounded-lg bg-palatte-primary1 p-4 shadow-lg">
                     {isUploadFileActive ? (
                         <div className="space-y-4 w-full">
-                            {/* Label for File Input */}
-                            <label className="block text-palatte-light font-medium mb-2">Upload Excel File</label>
-
-                            {/* Drag and Drop Section */}
+                            <div className={`flex flex-row justify-between`}>
+                                <label className="block text-palatte-light font-medium mb-2">
+                                    Upload Excel File
+                                </label>
+                                <select
+                                    value={selectedCourse}
+                                    onChange={handleCourseSelect}
+                                    className="cursor-pointer bg-palatte-primary3 text-palatte-light px-4 py-2 rounded-lg border border-palatte-secondary"
+                                >
+                                    <option value="">-- Select course --</option>
+                                    {coursesHandled.map((course) => (
+                                        <option key={course._id} value={course._id}>
+                                            {course} {/* Ensure course has a `name` property */}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                             <div
                                 {...getRootProps()}
                                 className="flex items-center justify-center w-full h-40 border-2 border-dashed border-palatte-secondary rounded-lg bg-palatte-primary2 text-palatte-light cursor-pointer hover:bg-palatte-primary4 transition duration-300 ease-in-out"
                             >
                                 <input {...getInputProps()} />
                                 <div className="flex flex-col items-center">
-                                    <FilePlus className="h-8 w-8 mb-2" />
-                                    <span className="text-center text-sm">Drag & Drop Excel File Here</span>
+                                    <FilePlus className="h-8 w-8 mb-2"/>
+                                    <span className="text-center text-sm">
+                                        Drag & Drop Excel File Here
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* File Input Section */}
-                            <div
-                                className="flex items-center justify-between bg-palatte-primary2 border border-palatte-secondary rounded-lg mt-4"
-                            >
-                                {/* Custom File Upload Button */}
-                                <motion.label
-                                    htmlFor="file-input"
-                                    className="w-full flex items-center justify-center py-3 px-4 bg-palatte-primary4 text-white rounded-lg cursor-pointer hover:bg-palatte-secondary transition duration-300 ease-in-out"
-                                >
-                                    <FilePlus className="h-5 w-5 mr-3"/>
-                                    <span>Upload File</span>
-                                </motion.label>
-                                {/* Actual File Input */}
-                                <input
-                                    id="file-input"
-                                    type="file"
-                                    accept=".xlsx, .xls"
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                />
-                            </div>
-
-                            {/* Display the selected file name (optional) */}
                             {fileData.length > 0 && (
-                                <p className="text-sm text-palatte-light mt-2">
-                                    {fileData.length} files selected.
-                                </p>
+                                <div>
+                                    <p className="text-sm text-palatte-light mt-2">
+                                        {fileData.length} records found.
+                                    </p>
+                                </div>
                             )}
                         </div>
                     ) : (
-                        <div className="w-full">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Email Field */}
-                                <div className="space-y-2">
-                                    <label className="block text-palatte-extraLight font-medium">Student Email</label>
+                        <div className="space-y-4">
+                            <div className="flex flex-row justify-between gap-5">
+
+                                    <input
+                                        type="number"
+                                        value={numStudents}
+                                        placeholder={'Enter number of students'}
+                                        min={1}
+                                        max={100}
+                                        onChange={handleNumStudentsChange}
+                                        className="w-full p-2 rounded-lg border border-palatte-secondary bg-palatte-primary3 text-palatte-light focus:outline-none focus:ring-1 focus:ring-palatte-secondary"
+                                    />
+
+                                <select
+                                    value={selectedCourse}
+                                    onChange={handleCourseSelect}
+                                    className="cursor-pointer bg-palatte-primary3 text-palatte-light px-4 py-2 rounded-lg border border-palatte-secondary"
+                                >
+                                    <option value="">-- Select course --</option>
+                                    {coursesHandled.map((course) => (
+                                        <option key={course._id} value={course._id}>
+                                            {course} {/* Ensure course has a `name` property */}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {studentsData.map((student, index) => (
+                                <div
+                                    key={index}
+                                    className="space-y-2 border-b-2 pb-4"
+                                >
+                                    <label className="block text-palatte-light font-medium">
+                                        Student {index + 1} Email
+                                    </label>
                                     <input
                                         type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-palatte-primary2 text-palatte-extraLight border border-palatte-secondary rounded-lg focus:ring-2 focus:ring-palatte-primary4 focus:outline-none"
-                                        placeholder="student@example.com"
+                                        value={student.email}
+                                        onChange={(e) =>
+                                            handleStudentChange(
+                                                index,
+                                                "email",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full px-4 py-2 rounded-lg border border-palatte-secondary bg-palatte-primary3 text-palatte-light focus:outline-none focus:ring-1 focus:ring-palatte-secondary"
                                     />
-                                    {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-                                </div>
 
-                                {/* Password Field */}
-                                <div className="space-y-2">
-                                    <label className="block text-palatte-extraLight font-medium">Password</label>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-palatte-primary2 text-palatte-extraLight border border-palatte-secondary rounded-lg focus:ring-2 focus:ring-palatte-primary4 focus:outline-none"
-                                        placeholder="Enter password"
-                                    />
-                                    {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
-                                </div>
 
-                                {/* Submit Button */}
-                                <div className="flex justify-end mt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="px-6 py-3 w-full bg-palatte-primary4 text-palatte-extraLight rounded-lg hover:bg-palatte-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isSubmitting ? "Creating..." : "Create Account"}
-                                    </button>
                                 </div>
-                            </form>
+                            ))}
                         </div>
+
                     )}
+                    <motion.button
+                        whileTap={{scale: 0.95}}
+                        className="w-full h-[3rem] mt-5 text-white bg-palatte-primary4 hover:bg-palatte-secondary rounded-lg shadow-md"
+                        onClick={handleSubmit}
+                    >
+                        Submit
+                    </motion.button>
                 </div>
             </div>
+
+
         </section>
     );
 };

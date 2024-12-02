@@ -132,7 +132,7 @@ const MCQAssessment = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="overflow-y-auto sm:max-h-[35rem] md:max-h-[35rem] lg:max-h-[40rem] stylish-scrollbar  flex flex-col gap-5 rounded-lg">
+      <div className="overflow-y-auto sm:max-h-[35rem] md:max-h-[35rem] lg:max-h-[40rem] stylish-scrollbar  flex flex-col gap-5 rounded-lg pr-2">
         {/* Title Section */}
         <div className="flex flex-col lg:flex-row justify-between items-center gap-5">
           <div className="w-full flex flex-col lg:flex-row justify-between items-center rounded-lg bg-palatte-primary2 p-5">
@@ -149,32 +149,31 @@ const MCQAssessment = () => {
               className="w-full lg:w-9/12 px-4 py-2 text-palatte-dark bg-white border border-palatte-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-palatte-primary4"
             />
           </div>
-          <div className="w-full flex sm:flex-col lg:flex-row justify-between items-center rounded-lg bg-palatte-primary2 p-5">
+          <div
+              className="w-full flex sm:flex-col lg:flex-row justify-between items-center rounded-lg bg-palatte-primary2 p-5">
             <label
-              htmlFor="num-questions"
-              className="w-full lg:w-4/12 text-palatte-medium font-semibold"
+                htmlFor="num-questions"
+                className="w-full lg:w-4/12 text-palatte-medium font-semibold"
             >
               Number of Questions
             </label>
-            <select
-              id="num-questions"
-              value={numQuestions}
-              onChange={handleNumQuestionsChange}
-              className="cursor-pointer w-full  lg:w-9/12 p-2 text-palatte-primary bg-white border border-palatte-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-palatte-primary4 transition-all"
-            >
-              {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
+            <input
+                id="num-questions"
+                type="number"
+                value={numQuestions}
+                onChange={handleNumQuestionsChange}
+                min={1}
+                max={50}
+                className="cursor-pointer w-full lg:w-9/12 p-2 text-palatte-primary bg-white border border-palatte-medium rounded-lg focus:outline-none focus:ring-1 focus:ring-palatte-primary4 transition-all"
+            />
+
           </div>
         </div>
 
         {/* Scheduling Section */}
         <div
-          id="scheduling-section"
-          className="bg-palatte-primary2 rounded-lg p-5 gap-5"
+            id="scheduling-section"
+            className="bg-palatte-primary2 rounded-lg p-5 gap-5"
         >
           <div className="flex flex-col gap-5">
             <div className="flex flex-row justify-between items-center gap-5">

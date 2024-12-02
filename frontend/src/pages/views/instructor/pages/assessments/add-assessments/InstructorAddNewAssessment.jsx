@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { styles } from "../../../../../../styles.js";
 import { motion } from "framer-motion";
-import { fadeIn } from "../../../../../../utils/motion.js";
 
 const InstructorAddNewAssessment = () => {
   const [assessmentType, setAssessmentType] = useState(""); // Single value for selection
@@ -36,17 +35,16 @@ const InstructorAddNewAssessment = () => {
   };
 
   const goBack = async () => {
-    navigate(`/instructor/assessments/add-new-assessment`);
+    navigate(`/instructor/assessments/`);
   };
 
   return (
     <div className="flex flex-col gap-5">
       {/* Header Section */}
-      <div
-          className="w-full h-[5rem] flex flex-col sm:flex-row justify-between items-center p-5 bg-palatte-primary1 rounded-lg">
-        <h1 className={`font-bold text-lg sm:text-xl text-white`}>
+      <div className="w-full flex justify-between items-center bg-palatte-primary1  p-4 rounded-lg shadow">
+        <h1 className="text-lg  cursor-pointer text-palatte-extraLight" onClick={goBack}>
           Assessments / {" "}
-          <span className={`font-normal`}>add-new</span>
+          <span className={`font-bold`}>add new assessment</span>
         </h1>
         <div className="flex flex-row justify-center items-center gap-5">
           <select
@@ -54,7 +52,7 @@ const InstructorAddNewAssessment = () => {
               name="assessment-type"
               value={assessmentType}
               onChange={handleChange}
-              className="w-[20rem] sm:w-[8rem] md:w-[10rem] lg:w-[20rem] h-[3rem] bg-palatte-extraLight  text-myColor-primary border border-myColor-medium rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-myColor-medium transition-all cursor-pointer"
+              className="w-[20rem] sm:w-[8rem] md:w-[10rem] lg:w-[20rem]  bg-palatte-extraLight  text-myColor-primary border border-myColor-medium rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-myColor-medium transition-all cursor-pointer"
           >
             <option className={`cursor-pointer`} value="">
               --Select assessment type--
@@ -67,10 +65,12 @@ const InstructorAddNewAssessment = () => {
             </option>
           </select>
 
+
+
           <motion.button
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.025 }}
-              className={`sm:w-[4rem] md:w-[6rem] lg:w-[8rem] h-[3rem] text-white bg-palatte-primary4 hover:bg-palatte-secondary rounded-lg cursor-pointer`}
+              className="px-4 py-2 bg-palatte-primary4 text-palatte-extraLight rounded-lg shadow hover:bg-palatte-secondary"
               onClick={goBack}
           >
             Back

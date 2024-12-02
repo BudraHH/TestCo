@@ -1,202 +1,237 @@
-import React, { useState } from "react";
-import { styles } from "../../../../../styles.js";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { fadeIn } from "../../../../../utils/motion.js";
-import { CheckCircle, Clock, Search, XCircle } from "lucide-react";
+import { Clock, Search, CheckCircle, XCircle } from "lucide-react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
-// Placeholder data for InstructorAssessments
 const InstructorAssessments = [
     {
-        title: "Quiz 1",
-        instructor: "John Doe",
+        title: "Operating Systems Quiz",
         type: "MCQ",
         status: "Active",
-        dueDate: "2024-11-30",
+        dueDate: "2024-12-05",
         submissions: 15,
         totalStudents: 20,
+        id: 1,
+        course: "Operating Systems",
     },
     {
-        title: "Coding Challenge 1",
-        instructor: "Jane Smith",
+        title: "Data Structures Problem Set",
         type: "Coding",
         status: "Ended",
-        dueDate: "2024-11-20",
+        dueDate: "2024-11-25",
         submissions: 10,
         totalStudents: 10,
+        id: 2,
+        course: "Data Structures",
     },
     {
-        title: "Quiz 1",
-        instructor: "John Doe",
+        title: "Database Management Assignment",
         type: "MCQ",
-        status: "Active",
-        dueDate: "2024-11-30",
-        submissions: 15,
-        totalStudents: 20,
-    },
-    {
-        title: "Coding Challenge 1",
-        instructor: "Jane Smith",
-        type: "Coding",
         status: "Ended",
         dueDate: "2024-11-20",
-        submissions: 10,
+        submissions: 8,
         totalStudents: 10,
+        id: 3,
+        course: "Database Management",
+    },
+    {
+        title: "Computer Networks Lab",
+        type: "Coding",
+        status: "Active",
+        dueDate: "2024-12-01",
+        submissions: 5,
+        totalStudents: 20,
+        id: 4,
+        course: "Computer Networks",
+    },
+    {
+        title: "Machine Learning Project",
+        type: "Coding",
+        status: "Active",
+        dueDate: "2024-12-15",
+        submissions: 12,
+        totalStudents: 15,
+        id: 5,
+        course: "Machine Learning",
     },
 ];
 
 const InstructorAssessmentsInfo = () => {
-    const [isLoading, setIsLoading] = useState(false); // Set to false for demo purposes
-    const navigate = useNavigate();
-    const [selectedType, setSelectedType] = useState("All Types");
-    const [selectedStatus, setSelectedStatus] = useState("All Status");
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedType, setSelectedType] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("All Status");
+    const [selectedCourse, setSelectedCourse] = useState("");
+    const [coursesHandled, setCoursesHandled] = useState([]);
+    const navigate = useNavigate();
 
-    // Filter assessments based on the selected type, status, and search query
-    const filteredAssessments = InstructorAssessments.filter((assessment) => {
-        const matchesType =
-            selectedType === "All Types" || assessment.type === selectedType;
+    const {
+        courses = [], // Fallback to empty array if no courses
+    } = useOutletContext();
+
+    useEffect(() => {
+        setCoursesHandled(courses);
+    }, [courses]);
+
+    const handleViewSubmissions = (assessment) => {
+        navigate(`/instructor/assessment/${assessment.id}/submissions`, {
+            state: { assessment },
+        });
+    };
+
+    const sortedAssessments = [...InstructorAssessments].sort((a, b) => b.id - a.id);
+
+    const filteredAssessments = sortedAssessments.filter((assessment) => {
+        const matchesType = selectedType === "" || assessment.type === selectedType;
         const matchesStatus =
             selectedStatus === "All Status" || assessment.status === selectedStatus;
+        const matchesCourse =
+            selectedCourse === "" || assessment.course === selectedCourse;
         const matchesSearch =
             searchQuery === "" ||
-            assessment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            assessment.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+            assessment.title.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesType && matchesStatus && matchesSearch;
+        return matchesType && matchesStatus && matchesCourse && matchesSearch;
     });
-
-    const handleClick = async (e) => {
-        e.preventDefault();
-        navigate(`/instructor/assessments/add-new-assessment`);
-    };
 
     return (
         <section className="w-full flex flex-col gap-4">
-            {/* Header Section */}
-            <div className="w-full h-[5rem] flex flex-col sm:flex-row justify-between items-center p-5 bg-palatte-primary1 rounded-lg">
-                <h1 className={`font-bold text-lg sm:text-xl text-white`}>
-                    Assessments
-                </h1>
+            <div className="w-full flex justify-between items-center bg-palatte-primary1 text-palatte-extraLight p-4 rounded-lg shadow">
+                <h1 className="text-lg font-bold">Assessments</h1>
                 <motion.button
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.025 }}
-                    className={`sm:w-[4rem] md:w-[6rem] lg:w-[8rem] h-[3rem] text-white bg-palatte-primary4 hover:bg-palatte-secondary rounded-lg cursor-pointer`}
-                    onClick={handleClick}
+                    onClick={() => navigate("/instructor/assessments/add-new-assessment")}
+                    className="px-4 py-2 bg-palatte-primary4 text-palatte-extraLight rounded-lg shadow hover:bg-palatte-secondary"
                 >
-                    + New
+                    + New Assessment
                 </motion.button>
             </div>
 
-            {/* Content Section */}
-            <div className="w-full h-[40rem] sm:h-[35rem] md:h-[35rem] lg:h-[40rem] p-4 gap-4 rounded-lg bg-palatte-primary1 flex flex-col justify-start items-center">
-                {isLoading ? (
-                    <p className="text-center text-white">Loading...</p>
-                ) : (
-                    <>
-                        {/* Filter and Search */}
-                        <div className="p-4 bg-palatte-primary2 rounded-lg shadow-md w-full">
-                            <div className="flex gap-4 items-center">
-                                <div className="relative flex-grow">
-                                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-palatte-primary3 hover:text-palatte-secondary hover:font-bold cursor-pointer w-5 h-5" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search assessments..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-2 bg-palatte-extraLight border rounded-lg focus:outline-none focus:ring-2 focus:ring-palatte-primary4 text-palatte-dark"
-                                    />
-                                </div>
-                                <select
-                                    className="w-1/4 px-4 py-2 bg-palatte-secondary text-palatte-extraLight border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-palatte-primary4 cursor-pointer"
-                                    value={selectedType}
-                                    onChange={(e) => setSelectedType(e.target.value)}
-                                >
-                                    <option>All Types</option>
-                                    <option>MCQ</option>
-                                    <option>Coding</option>
-                                </select>
-                                <select
-                                    className="w-1/4 px-4 py-2 bg-palatte-secondary text-palatte-extraLight border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-palatte-primary4 cursor-pointer"
-                                    value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
-                                >
-                                    <option>All Status</option>
-                                    <option>Active</option>
-                                    <option>Ended</option>
-                                </select>
-                            </div>
-                        </div>
+            <div className="w-full flex gap-4 justify-between items-center rounded-lg shadow">
+                <div className="relative w-1/2">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-palatte-medium w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Search assessments..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 text-white bg-palatte-primary3 border border-palatte-secondary rounded-lg focus:outline-none focus:bg-palatte-secondary"
+                    />
+                </div>
 
-                        {/* Assessments List */}
-                        <div className="overflow-y-auto max-h-[100%] stylish-scrollbar bg-palatte-primary2 p-4 flex flex-col gap-4 rounded-lg shadow-md w-full">
-                            {filteredAssessments.length > 0 ? (
-                                filteredAssessments.map((assessment, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 bg-palatte-primary3 text-palatte-extraLight rounded-lg shadow hover:shadow-lg transition-shadow"
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <h3 className="text-lg font-semibold">{assessment.title}</h3>
-                                                <p className="text-sm text-palatte-medium">
-                                                    Instructor: {assessment.instructor}
-                                                </p>
-                                            </div>
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                                    assessment.status === "Active"
-                                                        ? "bg-green-500 bg-opacity-20 text-green-400"
-                                                        : "bg-yellow-500 bg-opacity-20 text-yellow-400"
-                                                }`}
-                                            >
-                        {assessment.status}
-                      </span>
-                                        </div>
 
-                                        <div className="mt-4 flex gap-4 text-sm">
-                                            <div className="flex items-center">
-                                                <Clock className="w-4 h-4 text-gray-400 mr-2" />
-                                                Due: {assessment.dueDate}
-                                            </div>
-                                            <div className="flex items-center">
-                                                <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
-                                                {assessment.submissions} submissions
-                                            </div>
-                                            <div className="flex items-center">
-                                                <XCircle className="w-4 h-4 text-red-400 mr-2" />
-                                                {assessment.totalStudents - assessment.submissions} pending
-                                            </div>
-                                        </div>
+                <div className="flex gap-5">
+                    {selectedType && (
+                        <select
+                            className="px-4 py-2 bg-palatte-primary3 text-palatte-extraLight rounded-lg focus:outline-none cursor-pointer"
+                            value={selectedCourse}
+                            onChange={(e) => setSelectedCourse(e.target.value)}
+                        >
+                            <option value="">-- Courses --</option>
+                            {coursesHandled.map((course) => (
+                                <option key={course} value={course}>
+                                    {course}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <select
+                        className="px-4 py-2 bg-palatte-primary3 text-palatte-extraLight rounded-lg focus:outline-none cursor-pointer"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                    >
+                        <option value="">-- Assessment Type --</option>
+                        <option value="MCQ">MCQ</option>
+                        <option value="Coding">Coding</option>
+                    </select>
+                    <select
+                        className="px-4 py-2 bg-palatte-primary3 text-palatte-extraLight rounded-lg focus:outline-none cursor-pointer"
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                    >
+                        <option value="All Status">-- All Status --</option>
+                        <option value="Active">Active</option>
+                        <option value="Ended">Ended</option>
+                    </select>
+                </div>
+            </div>
 
-                                        <div className="mt-4">
-                                            <div className="w-full bg-gray-700 rounded-full h-2">
-                                                <div
-                                                    className="bg-palatte-medium h-2 rounded-full"
-                                                    style={{
-                                                        width: `${
-                                                            (assessment.submissions / assessment.totalStudents) * 100
-                                                        }%`,
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <p className="text-sm text-palatte-medium mt-1">
-                                                {Math.round(
-                                                    (assessment.submissions / assessment.totalStudents) * 100
-                                                )}
-                                                % completion rate
-                                            </p>
-                                        </div>
+            <div className="max-h-[35rem] overflow-auto stylish-scrollbar rounded-lg pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredAssessments.length > 0 ? (
+                        filteredAssessments.map((assessment) => (
+                            <motion.div
+                                key={assessment.id}
+                                className="p-4 bg-palatte-primary2 shadow-lg rounded-lg will-change-transform isolation-isolate transition-transform hover:scale-105"
+                                whileHover={{ scale: 1.0025 }}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-md font-bold text-palatte-extraLight">
+                                            {assessment.title}
+                                        </h3>
+                                        <p className="text-sm text-palatte-medium">
+                                            Type: {assessment.type}
+                                        </p>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="text-center text-palatte-error">
-                                    No matching results found.
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                            assessment.status === "Active"
+                                                ? "bg-green-500 bg-opacity-20 text-green-400"
+                                                : "bg-yellow-500 bg-opacity-20 text-yellow-400"
+                                        }`}
+                                    >
+                                        {assessment.status}
+                                    </span>
                                 </div>
-                            )}
+                                <div className="mt-4 flex items-center text-sm text-palatte-medium">
+                                    <Clock className="w-4 h-4 mr-2" />
+                                    Due: {assessment.dueDate}
+                                </div>
+                                <div className="mt-4 flex flex-col gap-2">
+                                    <div className="flex items-center text-sm text-palatte-medium">
+                                        <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                                        {assessment.submissions} submissions
+                                    </div>
+                                    <div className="flex items-center text-sm text-palatte-medium">
+                                        <XCircle className="w-4 h-4 text-red-400 mr-2" />
+                                        {assessment.totalStudents - assessment.submissions} pending
+                                    </div>
+                                    <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                        <div
+                                            className="bg-palatte-medium h-2 rounded-full"
+                                            style={{
+                                                width: `${
+                                                    (assessment.submissions /
+                                                        assessment.totalStudents) *
+                                                    100
+                                                }%`,
+                                            }}
+                                        ></div>
+                                    </div>
+                                    <p className="text-sm text-palatte-medium">
+                                        {Math.round(
+                                            (assessment.submissions / assessment.totalStudents) *
+                                            100
+                                        )}
+                                        % completion rate
+                                    </p>
+                                </div>
+                                <motion.button
+                                    onClick={() => handleViewSubmissions(assessment)}
+                                    className="mt-4 w-full px-4 py-2 text-palatte-extraLight bg-palatte-primary4 rounded-lg"
+                                    whileHover={{ scale: 1.02 }}
+                                >
+                                    View Submissions
+                                </motion.button>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <div className="w-full text-center text-palatte-medium">
+                            No assessments found matching the filters.
                         </div>
-                    </>
-                )}
+                    )}
+                </div>
             </div>
         </section>
     );

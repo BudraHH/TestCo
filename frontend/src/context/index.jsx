@@ -5,11 +5,9 @@ const AppContext = createContext();
 
 // Context Provider Component
 export const AppProvider = ({ children }) => {
-  // Global state variables
   const [userDetails, setUserDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch user details from API
   const fetchUserDetails = async () => {
     setIsLoading(true);
     try {
@@ -30,10 +28,10 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ userDetails, fetchUserDetails, isLoading }}>
-      {children}
-    </AppContext.Provider>
+      <AppContext.Provider value={{ userDetails, fetchUserDetails, isLoading }}>
+        {children}
+      </AppContext.Provider>
   );
 };
 
-export default AppContext;
+export default { AppContext, AppProvider };  // Default export

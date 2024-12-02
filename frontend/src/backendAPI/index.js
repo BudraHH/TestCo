@@ -1,4 +1,4 @@
-const backendDomain = "http://localhost:8080";
+const backendDomain = "https://fe28-117-193-31-56.ngrok-free.app";
 
 const backendApi = {
   signUp: {
@@ -9,33 +9,30 @@ const backendApi = {
     url: `${backendDomain}/api/sign-in`,
     method: "POST",
   },
-  currentUser: {
-    url: `${backendDomain}/api/user-Details`,
-    method: "GET",
-  },
   signOut: {
     url: `${backendDomain}/api/sign-out`,
-    method: "GET",
-  },
-  siteUsersDetails: {
-    url: `${backendDomain}/api/site-users-details`,
-    method: "GET",
-  },
-  updateUserDetails: {
-    url: `${backendDomain}/api/update-User-Details`,
     method: "POST",
   },
-  UploadProduct: {
-    url: `${backendDomain}/api/upload-new-product`,
+  profileCompletion : {
+    url: `${backendDomain}/api/profile-completion`,
     method: "POST",
   },
-  siteProductsDetails: {
-    url: `${backendDomain}/api/site-products-details`,
-    method: "GET",
+
+  currentUser: {
+    url: `${backendDomain}/api/fetch-profile`,
+    method: "POST",
   },
+
+
 
   
   // INSTRUCTOR SIDE
+
+  addStudents: {
+    url: `${backendDomain}/api/addStudents`,
+    method: "POST",
+  },
+
   createCodingAssessment: {
     url: `${backendDomain}/api/create-coding-assessment`,
     method: "POST",
